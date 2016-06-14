@@ -83,9 +83,9 @@ class regression(object):
             eql = eq.split('*')
             r = eqt[len(eqt)-1] if eqt[len(eqt)-1] == eql[len(eql)-1] else 0
             if r:
-                return str(c)+'x**(1/'+str(deg)+')+'+r
+                return str(c)+'*'+str(deg)+'root(x)+'+str(r)
             else:
-                return str(c)+'x**(1/'+str(deg)+')'
+                return str(c)+'*'+str(deg)+'root(x)'
         else:
             return eq
 
