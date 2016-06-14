@@ -3,8 +3,6 @@ Module for advanced math functions
 Intended for use with user interface, rather than computer processing
 For computer processesing, use oldmath (in progress)
 '''
-import cat
-#import warnings
 
 '''
 Takes a number and the base to change it to and changes base
@@ -53,7 +51,6 @@ If the number is not a perfect square, returns simplifed radical
 Using pad will pad the string returned with spaces on each side for flow.
 '''
 def root(num, base=2, pad=False):
-    import cat
     cat.ctype(num, int, 'root()')
     num = float(num)
     exp = 1./base
@@ -89,7 +86,7 @@ might move this to oldmath
 '''
 class factor(object):
     def __init__(self):
-        import cat
+        None
        
     '''
     returns a list of factor tuples
@@ -148,12 +145,10 @@ class factor(object):
         facts = []
         num2 = num
         for i in range(2, int((num**.5)+1)):
-            print i
             if not num2%i and factor.isPrime(i):
                  facts.append(i)
                  num2 /= i
                  while not num2%i:
-                     print i
                      num2 /= i
                      facts.append(i)
         return facts
@@ -164,7 +159,6 @@ Contains methods for conversion to fractions, simplification of fractions
 '''
 class fraction(object):
     def __init__(self, n, d):
-        import cat
         import warnings
         self.n = n
         self.d = d
@@ -181,11 +175,9 @@ class fraction(object):
 ##            cat.ctype(i, int, 'simplify()')
         n = num.n
         d = num.d
-        print factor.factor(n, one=False, split=True)
         for i in cat.listf.compare(factor.factor(n, one=False, split=True), factor.factor(d, one=False, split=True)):
             n /= i
             d /= i
-            print n, d
         return n, d
     
     '''
@@ -202,7 +194,6 @@ class fraction(object):
             count += 1
         n = num2
         d = 10**count
-        print n, d
         return fraction.simplify((int(n), int(d)))
 
     '''
@@ -401,103 +392,8 @@ class regression(object):
                 eq += '+'+str(newd)
             else:
                 eq += str(newd)
-        return eq#, newa, newb, newc, newd   
-    '''
-    cosine regression
-    see notes under sine regressions
-    '''
-    @classmethod
-    def cosreg(self, xs, ys, outprecision=1):
-        import numpy
-        from math import pi
-        import cat
-        precision = 5
-        for i, x in enumerate(xs):
-            xs[i] = round(x, precision)
-        for i, y in enumerate(ys):
-            ys[i] = round(y, precision)
-        del x
-        del y
-        #get quadratic curve from hich to derive vertexes midline, and period (find width between intersections
-        A = numpy.matrix([[xs[0]**2, xs[0], 1],
-                          [xs[1]**2, xs[1], 1],
-                          [xs[2]**2, xs[2], 1]])
-        X = numpy.matrix([[ys[0]], [ys[1]], [ys[2]]])
-        B = A.I*X
-        a = B[0, 0]
-        b = B[1, 0]
-        c = B[2, 0]
-        #can evaluate this with different numbers by changing x
-        #positive c to reflect around midline instead of x-axis
-        f1 = '%s*x**2+%s*x+%s' % (a, b, c)
-        f2 = '%s*x**2+%s*x+%s' % (-a, -b, c)
-        #midlines
-        #solves for intesrection
-        #can do this because functions are fliped around midline. Remove c to flip around midline, intersection
-        #is midline
-        #QE
-        #does not account for phase shift
-        #might not need to
-        x1 = 0
-        x2 = (-2*b)/(2*a)
-        x=0
-        y1 = eval(f1), precision
-        x = x2
-        y2 = eval(f1), precision
-        #possibly find the equation mathich y1 and y2 to find a linier midline
-        assert round(y1, 3) == round(y2, 3), 'Midline is not flat. Non-flat midlines not yet supported. y1=%s. y2=%s' %(y1, y2)
-        #y=asin(b(x+c))+d
-        newd = y1
-        period = abs(x1-x2)*2
-        #period seems to be wildly imprecise, this is an attempt
-        #to ensure it is not 2pi
-        if round(period, 1) == round(2*pi, 1):
-            newb = 1
-        else:
-            newb = abs(x1-x2)*2.0 #real be = 2pi/this
-        #find vertexes
-        h = (-b)/(2*a)
-        x = h
-        k = eval(f1)
-        newa = abs(k-newd)
-        #phase shift
-        newc = -h
-        #formats equation
-        coeffs = [newa, newb, newc, newd]
-        for i, co in enumerate(coeffs):
-            coeffs[i] = round(co, outprecision)
-        newa, newb, newc, newd = coeffs
-        eq = ''
-        if newa != 1:
-            eq += str(newa) 
-        eq += 'cos('
-        roundb = round(2*pi/newb, 1)
-        print roundb
-        if newb != 1 and newb != round(2*pi, precision) and not cat.oldmath.closeint((2*pi)/newb, .1) and not cat.oldmath.isfrac(roundb):
-            eq += '2pi/'+str(newb)+'('
-        elif cat.oldmath.closeint((2*pi)/newb, .1) or cat.oldmath.isfrac(roundb):
-            eq += str(round((2*pi)/newb, outprecision))+'('
-##        elif newb == 1:
-##            eq += '2pi('
-        z = numpy.sign(newc)
-        newc = round(newc, precision)%(period/2) #takes remainder becase a c larger than the period would be pointless
-        newc *= z
-        if newc != 0:
-            if newc > 0:
-                eq += 'x + '+str(newc)
-            else:
-                eq += 'x '+str(newc)
-        else:
-            eq += 'x'
-        if newb != 1 and newb != round(2*pi, precision):
-            eq += ')'
-        eq += ')'
-        if newd != 0:
-            if newd > 0:
-                eq += '+'+str(newd)
-            else:
-                eq += str(newd)
         return eq#, newa, newb, newc, newd
+    
                     
 '''
 class for taking irrational numbers out of equations
@@ -540,7 +436,7 @@ class irrat(object):
     
 #this stays at the bottom    
 def newmath():
-    print '''You can't take three from two,
+    print('''You can't take three from two,
 Two is less than three,
 So you look at the four in the tens place.
 Now that's really four tens
@@ -630,4 +526,4 @@ It won't do you a bit of good to review math.
 It's so simple,
 So very simple,
 That only a child can do it!
-~Tom Lehrer'''
+~Tom Lehrer''')
