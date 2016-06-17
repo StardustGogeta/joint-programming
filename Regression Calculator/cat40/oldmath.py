@@ -14,7 +14,7 @@ Returns numerical value
 Use newmath.root() for display strings
 '''
 def root(n, base=2):
-    return n**(1/base)
+    return n**(1.0/base)
 
 '''
 Returns true if input is integer, false if not
@@ -32,5 +32,5 @@ def closeint(num, r=.05):
 compares to list of known fractions
 returns true if in it
 '''
-def isfrac(num, fracs=[x/y for y in [9,16] for x in range(1,y)]):
+def isfrac(num, fracs=[float(x)/y for y in [9,16] for x in range(1,y)]):
     return num in fracs
