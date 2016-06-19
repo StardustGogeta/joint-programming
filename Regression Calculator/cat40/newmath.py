@@ -423,18 +423,17 @@ class equation(object):
             ops = ['+', '-', '/', '%', '*', '(', ')', '=', '**']
         else:
             self.declaredops = ops
-        self.ops = equation.getops(eq, ops)
-        self.nonops = equation.getnonops(eq, ops)
-        self.split = equation.eqsplit(eq, ops[1:], ops[0])
         self.string = eq
+        self.ops = equation.getops(ops)
+        self.nonops = equation.getnonops(ops)
 
     '''
     returns a list of the operators in the equation, in order
     '''
     @classmethod
-    def getops(self, eq, ops=['+', '-', '/', '%', '*', '(', ')', '=', '^']):
+    def getops(self, ops=['+', '-', '/', '%', '*', '(', ')', '=', '^']):
         oplist = []
-        for char in equation.eqsplit(eq, ops[1:], ops[0]):
+        for char in self.split(ops):
             if char in ops:
                 oplist.append(char)
         return oplist
@@ -443,8 +442,8 @@ class equation(object):
     like getops, but a generator
     '''
     @classmethod
-    def getopsgen(self, eq, ops=['+', '-', '/', '%', '*', '(', ')', '=', '^']):
-        for char in equation.eqsplit(eq, ops[1:], ops[0]):
+    def getopsgen(self, ops=['+', '-', '/', '%', '*', '(', ')', '=', '^']):
+        for char in self.split(ops):
             if char in ops:
                 yield char
 
@@ -452,9 +451,9 @@ class equation(object):
     gets everything but the operators, in order
     '''
     @classmethod
-    def getnonops(self, eq, ops=['+', '-', '/', '%', '*', '(', ')', '=', '^']):
+    def getnonops(self, ops=['+', '-', '/', '%', '*', '(', ')', '=', '^']):
         oplist = []
-        for char in equation.eqsplit(eq, ops[1:], ops[0]):
+        for char in self.split(ops):
             if char not in ops:
                 oplist.append(char)
         return oplist
@@ -463,8 +462,8 @@ class equation(object):
     like getops, but a generator
     '''
     @classmethod
-    def getnonopsgen(self, eq, ops=['+', '-', '/', '%', '*', '(', ')', '=', '^']):
-        for char in equation.eqsplit(eq, ops[1:], ops[0]):
+    def getnonopsgen(self, ops=['+', '-', '/', '%', '*', '(', ')', '=', '^']):
+        for char in self.split(ops):
             if char not in ops:
                 yield char
                 
@@ -474,11 +473,13 @@ class equation(object):
     Note: place multi-charecter operators first in the list
     '''
     @classmethod
-    def eqsplit(self, eq, ops=['-', '/', '%', '*', '(', ')', '=', '^'], init='+'):
+    def split(self, ops=['+', '-', '/', '%', '*', '(', ')', '=', '^']):
         import fnmatch
         import listf
+        init = ops[0]
+        ops = ops[1:]
         #first operator is a special case. '+' is used
-        e = eq.replace('**', '^').split(init)
+        e = self.string.replace('**', '^').split(init)
         for i, c in enumerate(e):
             e[i] = [c, init]
         e = listf.flatten(e)
@@ -517,14 +518,45 @@ class equation(object):
         import re
         import listf
         import fnmatch
-        e = self.list
+        e = self.split()
         for i, char in enumerate(e):
             if char == '+' or char == '-':
+                try: a = int(e[i-1]) == 0
+                except (IndexError, ValueError):
+                    pass
+                else:
+                    if a:
+                        e[i] = ''
+                        e[i-1] = ''
                 e[i] = ' %s ' % char
-            if char == '**':
+            elif char == '**':
                 e[i] = '^'
+            elif char == '*':
+                try: a = int(e[i-1]) == 1
+                except (IndexError, ValueError):
+                    pass
+                else:
+                    if a:
+                        e[i] = ''
+                        e[i-1] = ''
             #add any additional charecters here
             #put parenthesise logic below root logic
+            else:
+                try: a = int(char) == 0 and '+' in e[i+1]#e[i+1] == '+' or e[i+1] == ' + '
+                except (IndexError, ValueError):
+                    pass
+                else:
+                    if a:
+                        e[i] = ''
+                        e[i+1] = ''
+                    else:
+                        try: a = int(char) == 1 and e[i+1] == '*'#'*' in e[i+1] and '**' not in e[i+1]
+                        except (IndexError, ValueError):
+                            pass
+                        else:
+                            if a:
+                                e[i] = ''
+                                e[i+1] = ''
         e = ''.join(e)
         #Root logic:
         #parenthesis framing pattern to include removed charecters
@@ -551,12 +583,12 @@ class equation(object):
                     e[i] = '%sroot(%s^(%s))' % (root, base, exp)
         #parenthese logic
         e = ''.join(e)
-        e = equation.eqsplit(e)
+        e = equation(e).split()
         for i, char in enumerate(e):
             if char == '*' and e[i+1] == '(': 
                 e[i] = ''
-        return ''.join(e)  
-
+        return ''.join(e)
+    
 #this stays at the bottom    
 def newmath():
     print('''You can't take three from two,
