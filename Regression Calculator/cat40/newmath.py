@@ -517,7 +517,6 @@ class equation(object):
     def format(self):
         import re
         import listf
-        import fnmatch
         e = self.split()
         for i, char in enumerate(e):
             if char == '+' or char == '-':
@@ -582,8 +581,15 @@ class equation(object):
                 else:
                     e[i] = '%sroot(%s^(%s))' % (root, base, exp)
         #parenthese logic
+        print(self.string)
         e = ''.join(e)
+        #this is needed to preserve the origonal equation object
+        savedeq = [self.ops, self.nonops, self.string, self.declaredops]
         e = equation(e).split()
+        self.ops = savedeq[0]
+        self.nonops = savedeq[1]
+        self.string = savedeq[2]
+        self.declaredops = savedeq[3]
         for i, char in enumerate(e):
             if char == '*' and e[i+1] == '(': 
                 e[i] = ''
