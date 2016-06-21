@@ -1,5 +1,5 @@
 import poly
-
+import time
 def fit(attempt):
     fitness = 0
     try:
