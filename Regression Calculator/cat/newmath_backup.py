@@ -31,10 +31,6 @@ class regression(object):
     def importnumpy(self):
         #import main only works if executed with 'import newmath' from main
         #will not work if run directly (can't find main.py)
-        global numpy
-        global mult
-        global inv
-        
         import main
         if main.hasnumpy:
             import numpy
@@ -43,14 +39,13 @@ class regression(object):
             def inv(a):
                 return a.I
         else:
-            from stardust.matrix import mult, inv
-            import stardust.matrix as numpy
+            from stardust import matrix
     '''
     Standard regression
     '''
     @classmethod
     def standreg(self, xs, ys, retdeg=False):
-        regression.importnumpy()
+        import numpy
         deg = len(xs)-1
         array = numpy.zeros((deg+1, deg+1))
         for i, x in enumerate(xs):
@@ -61,7 +56,7 @@ class regression(object):
         for i, y in enumerate(ys):
             array[i][0] = y
         X = numpy.matrix(array)
-        B = mult(inv(A), X)
+        B = A.I*X
         coeffs = [float(i[0]) for i in B]
         eq = ''
         for i, c in enumerate(coeffs):

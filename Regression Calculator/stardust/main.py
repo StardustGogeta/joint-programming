@@ -17,7 +17,7 @@ z = input("Extra options? (See source for full list.)\n").split(' ')
 # 3. Maximum complexity (default is 6)
 #x='1 3 5 7 9 11 13 2 4 6 8 10 12 14'.split()
 #y='0 0 0 0 0 0 0 5 -10 398053859 -7 -103454 0 2804'.split()
-x, y = [float(e) for e in x], [float(e) for e in y]
+x, y = [eval(e) for e in x], [eval(e) for e in y]
 print('Polynomial Regression:',poly.poly(x,y),'\n')
 z[0] = 1 if z[0]=='' else int(z[0])
 charsets = ["e-0123456789%+*/().","""e\\0123456789%+-_=/*^,.;!()'{}[]:\""""]
