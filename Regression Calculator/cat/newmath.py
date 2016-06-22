@@ -29,22 +29,18 @@ class regression(object):
         #imports here don't seem to work for some reason
     @classmethod
     def importnumpy(self):
-        #import main only works if executed with 'import newmath' from main
-        #will not work if run directly (can't find main.py)
         global numpy
         global mult
         global inv
-        
-        import main
-        if main.hasnumpy:
-            import numpy
+        try: import numpy
+        except ImportError:
+            from stardust.matrix import mult, inv
+            import stardust.matrix as numpy
+        else:
             def mult(a, b):
                 return a*b
             def inv(a):
                 return a.I
-        else:
-            from stardust.matrix import mult, inv
-            import stardust.matrix as numpy
     '''
     Standard regression
     '''
@@ -82,7 +78,7 @@ class regression(object):
         if retdeg:
             return eq, deg, coeffs
         else:
-            return eq
+            return equation(eq).format()
 
     '''
     root regression
@@ -117,8 +113,8 @@ class regression(object):
     '''
     @classmethod
     def sinreg(self, xs, ys, outprecision=1, supressmidlineerror=True):
-        import numpy
-        import oldmath
+        regression.importnumpy()
+        from cat import newmath
         from math import pi
         precision = 5
         for i, x in enumerate(xs):
@@ -492,8 +488,8 @@ class equation(object):
     '''
     @classmethod
     def split(self, ops=['+', '-', '/', '%', '*', '(', ')', '=', '^']):
-        import fnmatch
-        import listf
+        #import fnmatch
+        from cat import listf
         init = ops[0]
         ops = ops[1:]
         #first operator is a special case. '+' is used
@@ -534,7 +530,7 @@ class equation(object):
     @classmethod
     def format(self):
         import re
-        import listf
+        from cat import listf
         e = self.split()
         for i, char in enumerate(e):
             if char == '+' or char == '-':
@@ -599,7 +595,7 @@ class equation(object):
                 else:
                     e[i] = '%sroot(%s^(%s))' % (root, base, exp)
         #parenthese logic
-        print(self.string)
+        #print(self.string)
         e = ''.join(e)
         #this is needed to preserve the origonal equation object
         savedeq = [self.ops, self.nonops, self.string, self.declaredops]
@@ -611,6 +607,8 @@ class equation(object):
         for i, char in enumerate(e):
             if char == '*' and e[i+1] == '(': 
                 e[i] = ''
+            if char == '**':
+                e[i] = '^'
         return ''.join(e)
     
 #this stays at the bottom    
