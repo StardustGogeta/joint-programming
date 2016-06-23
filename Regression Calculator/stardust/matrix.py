@@ -38,3 +38,8 @@ def minors(a):
     return c
 def inv(a):
     return scale(adj(minors(a)),1/det(a))
+def zeros(dims):
+    return [[[0]*dims[1]]*dims[0]]
+# Added to keep compatability with numpy matrix struture. Does absolutly nothing
+def matrix(array):
+    return array

@@ -27,6 +27,19 @@ class regression(object):
     def __init__(self):
         None
         #imports here don't seem to work for some reason
+    @classmethod
+    def importnumpy(self):
+        #import main only works if executed with 'import newmath' from main
+        #will not work if run directly (can't find main.py)
+        import main
+        if main.hasnumpy:
+            import numpy
+            def mult(a, b):
+                return a*b
+            def inv(a):
+                return a.I
+        else:
+            from stardust import matrix
     '''
     Standard regression
     '''
