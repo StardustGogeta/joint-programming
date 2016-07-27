@@ -46,7 +46,10 @@ class regression(object):
     '''
     @classmethod
     def standreg(self, xs, ys, retdeg=False):
+        import sympy
         regression.importnumpy()
+        xsym = sympy.Symbol('x')
+        ysym = sympy.Symbol('y')
         deg = len(xs)-1
         array = numpy.zeros((deg+1, deg+1))
         for i, x in enumerate(xs):
@@ -75,6 +78,7 @@ class regression(object):
         #formats equation to make more readable
         eq = eq.rstrip('+')
         eq = eq.replace('+-', '-')
+        eq = str(sympy.simplify(eq))
         if retdeg:
             return eq, deg, coeffs
         else:
@@ -87,6 +91,8 @@ class regression(object):
     '''
     @classmethod
     def rootreg(self, xs, ys):
+        import sympy
+        xsym = sympy.Symbol('x'); ysym=sympy.Symbol('y')
         eq, deg, coeffs = regression.standreg(ys, xs, True)
         eq = eq.replace('x', 'y')
         #perform limited 'algebra'
@@ -101,7 +107,7 @@ class regression(object):
             else:
                 return str(c)+'*'+str(deg)+'root(x)'
         else:
-            return eq
+            return equation(str(sympy.simplify(eq))).format()
 
     '''
     sine regression
@@ -431,7 +437,7 @@ Makes equation objects
 '''
 class equation(object):
     @classmethod
-    def __init__(self, eq, ops=None):
+    def __init__(self, eq, ops=None, var = None):
         if not ops:
             self.declaredops = []
             ops = ['+', '-', '/', '%', '*', '(', ')', '=', '**']
@@ -440,6 +446,7 @@ class equation(object):
         self.string = eq
         self.ops = equation.getops(ops)
         self.nonops = equation.getnonops(ops)
+        self.vars = var
 
     '''
     returns a list of the operators in the equation, in order
@@ -531,6 +538,7 @@ class equation(object):
     def format(self):
         import re
         from cat import listf
+        import sympy
         e = self.split()
         for i, char in enumerate(e):
             if char == '+' or char == '-':
@@ -609,7 +617,10 @@ class equation(object):
                 e[i] = ''
             if char == '**':
                 e[i] = '^'
-        return ''.join(e)
+        if self.vars:
+            return str(sympy.simplfiy(''.join(e)))
+        else:
+            return ''.join(e)
     
 #this stays at the bottom    
 def newmath():
