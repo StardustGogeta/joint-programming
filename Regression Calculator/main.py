@@ -40,16 +40,17 @@ def comb(r):
         
 xs = input('enter input points, seperated by commas\n').replace(' ', '').split(',')
 ys = input('enter output points, seperated by commas\n').replace(' ', '').split(',')
-print('done')
 xs = [eval(x) for x in xs]
 ys = [eval(y) for y in ys]
 found = []
-print(cat.newmath.regression.standreg(xs, ys))
+r = cat.newmath.regression(xs, ys)
+print(r.standreg())
 checkmatch()
-#exponential regressoin here
-print(cat.newmath.regression.rootreg(xs, ys))
+print(r.expreg())
 checkmatch()
-print(cat.newmath.regression.sinreg(xs, ys))
+print(r.rootreg())
+checkmatch()
+print(r.sinreg())
 checkmatch()
 
 complexitylimit = getnum('input complexity limit\n')
