@@ -1,6 +1,7 @@
 import stardust
 import cat
 import sys
+import sympy
 from itertools import product
 def fit(attempt):
     fitness = 0
@@ -39,32 +40,39 @@ def comb(r):
         
 xs = input('enter input points, seperated by commas\n').replace(' ', '').split(',')
 ys = input('enter output points, seperated by commas\n').replace(' ', '').split(',')
-print('done')
 xs = [eval(x) for x in xs]
 ys = [eval(y) for y in ys]
-print(cat.newmath.regression.standreg(xs, ys))
+found = []
+r = cat.newmath.regression(xs, ys)
+print(r.standreg())
 checkmatch()
-#exponential regressoin here
-print(cat.newmath.regression.rootreg(xs, ys))
+print(r.expreg())
 checkmatch()
-print(cat.newmath.regression.sinreg(xs, ys))
+print(r.rootreg())
+checkmatch()
+print(r.sinreg())
 checkmatch()
 
 complexitylimit = getnum('input complexity limit\n')
-#use stardust method <=4, then cat method
+#use stardust method <=4, then cat method (4 seems to be where
+#efficencies intersect)
 complexity = 1
 fitness, bestFit, indices = 0,0,[0]
 chars = "x-0123456789%+*/()."
+x = sympy.Symbol('x')
 addLen = (len(chars))
 while complexity <= 4 and complexity <= complexitylimit:
     attempt = ''
     for a in indices:
         attempt += chars[a]
     fitness = fit(attempt)
-    if bestFit < fitness:
+    try: attempt = sympy.simplify(attempt)
+    except: pass
+    if bestFit < fitness and attempt not in found:
         bestFit = fitness
-        print("    {0} received a fitness of {1}.".format(attempt,fitness))
+        print("\t{0} received a fitness of {1}.\n".format(attempt,fitness))
         checkmatch()
+    found.append(attempt)
     indices[-1] += 1
     addLen -= 1 if addLen else -1*(len(chars))**len(attempt)
     if not addLen:

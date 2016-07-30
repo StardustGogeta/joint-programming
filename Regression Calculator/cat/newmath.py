@@ -2,6 +2,7 @@
 Module for advanced math functions
 Intended for use with user interface, rather than computer processing
 For computer processesing, use oldmath (in progress)
+Need to remove regerances to 'cat' if possible, and import modules directly
 '''
 
 '''
@@ -24,8 +25,9 @@ class for running regressions and giving the result
 '''
 class regression(object):
     @classmethod
-    def __init__(self):
-        None
+    def __init__(self, xs, ys):
+        self.xs = xs
+        self.ys = ys
         #imports here don't seem to work for some reason
     @classmethod
     def importnumpy(self):
@@ -45,8 +47,13 @@ class regression(object):
     Standard regression
     '''
     @classmethod
-    def standreg(self, xs, ys, retdeg=False):
+    def standreg(self, retdeg=False):
+        import sympy
+        xs = self.xs
+        ys = self.ys
         regression.importnumpy()
+        xsym = sympy.Symbol('x')
+        ysym = sympy.Symbol('y')
         deg = len(xs)-1
         array = numpy.zeros((deg+1, deg+1))
         for i, x in enumerate(xs):
@@ -75,6 +82,7 @@ class regression(object):
         #formats equation to make more readable
         eq = eq.rstrip('+')
         eq = eq.replace('+-', '-')
+        eq = str(sympy.simplify(eq))
         if retdeg:
             return eq, deg, coeffs
         else:
@@ -86,7 +94,11 @@ class regression(object):
     otherwise returns inverse function (x=y**5+y**2+5)
     '''
     @classmethod
-    def rootreg(self, xs, ys):
+    def rootreg(self):
+        import sympy
+        xs = self.xs
+        ys = self.ys
+        xsym = sympy.Symbol('x'); ysym=sympy.Symbol('y')
         eq, deg, coeffs = regression.standreg(ys, xs, True)
         eq = eq.replace('x', 'y')
         #perform limited 'algebra'
@@ -101,7 +113,7 @@ class regression(object):
             else:
                 return str(c)+'*'+str(deg)+'root(x)'
         else:
-            return eq
+            return equation(str(sympy.simplify(eq))).format()
 
     '''
     sine regression
@@ -112,10 +124,12 @@ class regression(object):
     VERY imprecise (occasionaly precise to the tenth place; usually worse)
     '''
     @classmethod
-    def sinreg(self, xs, ys, outprecision=1, supressmidlineerror=True):
+    def sinreg(self, outprecision=1, supressmidlineerror=True):
         regression.importnumpy()
         from cat import newmath
         from math import pi
+        xs = self.xs
+        ys = self.ys
         precision = 5
         for i, x in enumerate(xs):
             xs[i] = round(x, precision)
@@ -205,8 +219,22 @@ class regression(object):
             else:
                 eq += str(newd)
         return eq#, newa, newb, newc, newd
-    
-                   
+
+    '''
+    Exponential regression
+    '''
+    @classmethod
+    def expreg(self):
+        import cat
+        xs = self.xs
+        ys = self.ys
+        import sympy
+        x = sympy.Symbol('x'); y = sympy.Symbol('y')
+        if len(xs) < 3 or len(ys) < 3:
+            return 'Not enough points to find equation'
+        B=cat.oldmath.root((ys[0]/ys[1]), (xs[0]-xs[1]))
+        A = ys[2]/(B**xs[2])
+        return equation(str(sympy.simplify('%s*%s**x' % (A, B)))).format()
 '''
 Takes the root of a number
 If the number is not a perfect square, returns simplifed radical
@@ -431,7 +459,8 @@ Makes equation objects
 '''
 class equation(object):
     @classmethod
-    def __init__(self, eq, ops=None):
+    def __init__(self, eq, ops=None, var = None):
+        import cat
         if not ops:
             self.declaredops = []
             ops = ['+', '-', '/', '%', '*', '(', ')', '=', '**']
@@ -440,6 +469,8 @@ class equation(object):
         self.string = eq
         self.ops = equation.getops(ops)
         self.nonops = equation.getnonops(ops)
+        self.vars = var
+        self.nums = equation.getnums(ops)
 
     '''
     returns a list of the operators in the equation, in order
@@ -473,14 +504,27 @@ class equation(object):
         return oplist
 
     '''
-    like getops, but a generator
+    like getnonops, but a generator
     '''
     @classmethod
     def getnonopsgen(self, ops=['+', '-', '/', '%', '*', '(', ')', '=', '^']):
         for char in self.split(ops):
             if char not in ops:
                 yield char
-                
+    '''
+    Finds all numbers in the equation
+    '''
+    @classmethod
+    def getnums(self, ops=['+', '-', '/', '%', '*', '(', ')', '=', '^']):
+        import cat
+        nums = []
+        for char in self.split(ops):
+            if char not in ops and char not in self.vars:
+                if cat.oldmath.isint(float(char)):
+                    nums.append(int(char))
+                else:
+                    nums.append(float(char))
+        return nums
     '''
     Splits an equation into a list of numbers/variables and operators
     Returns a list
@@ -531,6 +575,7 @@ class equation(object):
     def format(self):
         import re
         from cat import listf
+        import sympy
         e = self.split()
         for i, char in enumerate(e):
             if char == '+' or char == '-':
@@ -609,7 +654,10 @@ class equation(object):
                 e[i] = ''
             if char == '**':
                 e[i] = '^'
-        return ''.join(e)
+        if self.vars:
+            return str(sympy.simplfiy(''.join(e)))
+        else:
+            return ''.join(e)
     
 #this stays at the bottom    
 def newmath():
